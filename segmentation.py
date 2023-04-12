@@ -41,21 +41,20 @@ class segmentation():
         print("aun no esta")
         # origin_x = 100
         # origin_y = 100
- 
+        # origin_z = 1
         # x = 1
         # y = 1
-
+        # z = 1
+        # valor_medio_cluster = image[origin_x, origin_y, 20]
         # tol = 3
         # segmentation = np.zeros_like(image)
-
+        # itera = 1
         # point = [origin_x,origin_y]
         # tail = [point]
         # evaluated=[]
         # while True:
         #     punto = tail.pop(0)
-
-        #     # print(len(tail))
-            
+        #     #print(len(tail))
         #     for dx in [-x, 0, x] :
         #         for dy in [-y, 0, y] :
         #             if((punto[0]+dx < 230) and ((punto[0]+dx) > 0) and (punto[1]+dy < 230) and ((punto[1]+dy) > 0) ):
@@ -72,7 +71,7 @@ class segmentation():
         #     valor_medio_cluster = image[segmentation == 1].mean()
 
         #     if len(tail) == 0:
-        #         break
+        #       break
 
 
     def k_means(image, ks):
