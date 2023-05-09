@@ -6,7 +6,7 @@ from tkinter import filedialog
 import nibabel as nib
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from segmentation import segmentation
+from algorithms.segmentation import segmentation
 
 class interfaz():
     def __init__(self):
