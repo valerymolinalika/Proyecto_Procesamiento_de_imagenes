@@ -33,13 +33,13 @@ class uploadImages():
 
         # Crear un botón para abrir la ventana de selección de archivo
         self.btn = tk.Button(self.tab1, image=self.img_boton, bg="#2c343c", borderwidth=0, command=self.open_file)
-        self.btn.place(x=260, y= 115, width=80,height=50)
+        self.btn.place(x=264, y= 115, width=80,height=50)
         self.labelb1 =  tk.Label(self.tab1, text ="Browse folder here", font=self.fontStyle3, bg="#2c343c",fg="#661ae6" )
         self.labelb1.place(x=210, y= 160, width=200,height=25)
         self.labelb2 =  tk.Label(self.tab1, text ="Suports nii and nii.gz", font=self.fontStyle3, bg="#2c343c",fg="#a7a1a5" )
         self.labelb2.place(x=185, y= 180, width=250,height=25)
-        self.labelb3 =  tk.Label(self.tab1, text ="Preview", font=self.fontStyle2, bg="#2c343c",fg="#661ae6" )
-        self.labelb3.place(x=30, y= 220, width=150,height=25)
+        self.labelb3 =  tk.Label(self.tab1, text ="Preprocessing", font=self.fontStyle2, bg="#2c343c",fg="#661ae6" )
+        self.labelb3.place(x=30, y= 220, width=250,height=42)
 
         self.label =  tk.Label(self.tab1, text ="Select an Image: ", font=self.fontStyle3, bg="#2c343c",fg="#a7a1a5" )
         self.label.place(x=30, y= 280, width=180,height=25)
