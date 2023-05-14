@@ -2,7 +2,6 @@ from tkinter.font import Font
 from tkinter import ttk,messagebox
 from tkinter import *
 import tkinter as tk
-
 from modules.uploadImages import uploadImages
 from modules.visualize import visualize
 import os
@@ -43,5 +42,6 @@ class interfaz():
         uploadImages(self.ventana, self.tab1)
         visualize(self.ventana, self.tab4)
         self.ventana.mainloop()
+            
 
 mi_interfaz = interfaz()

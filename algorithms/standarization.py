@@ -9,6 +9,8 @@ class standarization():
         self.type=type
 
     def rescaling(self):
+
         mediana = self.image_data.mean()
         desviacion=self.image_data.std()
         image_data_rescaled =(self.image_data - mediana)/desviacion 
+        return image_data_rescaled

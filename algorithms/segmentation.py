@@ -1,6 +1,6 @@
 import nibabel as nib
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 class segmentation():
     def __init__(self,image_data,method,tau):
@@ -35,7 +35,6 @@ class segmentation():
         print(tau)
         print(segmentationr.shape)
         return segmentationr
-        plt.imshow(segmentation[:, :, 100])
 
     def growing(image,axis,valor,tol):
         print("aun no esta")
@@ -90,7 +89,6 @@ class segmentation():
 
         return segmentationr
 
-        print("hola")
             
 
 
