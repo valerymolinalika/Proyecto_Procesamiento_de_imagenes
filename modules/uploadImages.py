@@ -7,6 +7,8 @@ from tkinter import filedialog
 import nibabel as nib
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from algorithms.standardization import standardization
+from algorithms.denoise import denoise
 import shutil
 import os
 
@@ -31,6 +33,7 @@ class uploadImages():
         # Crear un lienzo para mostrar la imagen
         self.canvas = tk.Canvas(self.tab1, bg='#2c343c')
         self.canvas.place(x=700, y= 40, width=450, height=450)
+
 
         # Crear un botón para abrir la ventana de selección de archivo
         self.btn = tk.Button(self.tab1, image=self.img_boton, bg="#2c343c", borderwidth=0, command=self.open_file)
@@ -64,7 +67,7 @@ class uploadImages():
         self.labelstandarization.place(x=40, y= 368, width=220,height=50)
         self.standarization = ctk.CTkComboBox(self.tab1,
                                      width=220,height=35, state='disabled',
-                                     fg_color="#2c343c",border_color="#661ae6", command=self.display_selected2)
+                                     fg_color="#2c343c",border_color="#661ae6")
         self.standarization.place(x=295, y= 376)
 
         #Remocion de ruido a aplicar
@@ -72,12 +75,12 @@ class uploadImages():
         self.labeldenoising.place(x=40, y= 423, width=230,height=50)
         self.denoising = ctk.CTkComboBox(self.tab1,
                                      width=220,height=35, state='disabled',
-                                     fg_color="#2c343c",border_color="#661ae6", command=self.display_selected2)
+                                     fg_color="#2c343c",border_color="#661ae6")
         self.denoising.place(x=295, y= 430)
         
-        self.histogram=ctk.CTkButton(self.tab1, height=40, font=("Lucida Grande", 15), text="Histogram",text_color='#a7a1a5',fg_color='#661ae6')
+        self.histogram=ctk.CTkButton(self.tab1, height=40, font=("Lucida Grande", 15), text="Histogram",text_color='#a7a1a5',fg_color='#661ae6', command=self.histogram)
         self.histogram.place(x=100, y=500)
-        self.image=ctk.CTkButton(self.tab1, height=40, font=("Lucida Grande", 15),text="Image",text_color='#a7a1a5',fg_color='#661ae6')
+        self.image=ctk.CTkButton(self.tab1, height=40, font=("Lucida Grande", 15),text="Image",text_color='#a7a1a5',fg_color='#661ae6', command= self. imagebutton)
         self.image.place(x=300, y=500)
 
     #Funciones auxiliares 
@@ -168,8 +171,9 @@ class uploadImages():
         self.data = self.img.get_fdata()
         # Mostrar la imagen en un lienzo
         self.canvas.delete("all")
-        # Crear una figura y un objeto de plot
-        self.fig, self.ax = plt.subplots()
+        
+        # Crear una figura y un objeto de plot       
+        self.fig, self.ax= plt.subplots()
         # Mostrar la imagen en el plot
         self.ax.imshow(self.data[:,:,5])
         #    Convertir la figura en un widget de Tkinter y mostrarla en el canvas
@@ -200,3 +204,117 @@ class uploadImages():
         else:
             messagebox.showwarning(message="An image has not been uploaded", title="WARNINGN")
        
+    def histogram(self):
+
+        file_name = os.path.basename(self.path_imagen)
+        name, ext = os.path.splitext(file_name) 
+        self.canvas.delete("all") 
+
+        if self.standarization.get()=='Rescaling':
+            self.image_rescaled=standardization.rescaling(self.data, name)
+            
+            if self.fig is not None:
+                self.fig.clf()
+                self.fig = None
+                self.ax = None
+                self.canvas_widget.get_tk_widget().destroy()
+                self.canvas_widget = None
+                self.barra_valores.destroy()
+
+            self.fig, self.ax = plt.subplots()
+            self.ax.hist(self.image_rescaled.flatten(), 100)
+
+            self.canvas_widget = FigureCanvasTkAgg(self.fig, self.canvas)
+            self.canvas_widget.get_tk_widget().place( x=0, y=0,width=450, height=450)
+        
+        if self.standarization.get()=='Z-score':
+            self.image_rescaled=standardization.z_score(self.data, name)
+
+            if self.fig is not None:
+                self.fig.clf()
+                self.fig = None
+                self.ax = None
+                self.canvas_widget.get_tk_widget().destroy()
+                self.canvas_widget = None
+                self.barra_valores.destroy()
+
+            self.fig, self.ax = plt.subplots()
+            self.ax.hist(self.image_rescaled.flatten(), 100)
+
+            self.canvas_widget = FigureCanvasTkAgg(self.fig, self.canvas)
+            self.canvas_widget.get_tk_widget().place( x=0, y=0,width=450, height=450)
+
+        if self.standarization.get()=='White Stripe':
+            self.image_rescaled=standardization.white_stripe(self.data, name)
+
+            if self.fig is not None:
+                self.fig.clf()
+                self.fig = None
+                self.ax = None
+                self.canvas_widget.get_tk_widget().destroy()
+                self.canvas_widget = None
+                self.barra_valores.destroy()
+
+            self.fig, self.ax = plt.subplots()
+            self.ax.hist(self.image_rescaled.flatten(), 100)
+
+            self.canvas_widget = FigureCanvasTkAgg(self.fig, self.canvas)
+            self.canvas_widget.get_tk_widget().place( x=0, y=0,width=450, height=450)
+
+        if self.standarization.get()=='Histogram matching':
+            self.image_rescaled=standardization.histogram_matching(self.path_imagen,self.data, name)
+
+            if self.fig is not None:
+                self.fig.clf()
+                self.fig = None
+                self.ax = None
+                self.canvas_widget.get_tk_widget().destroy()
+                self.canvas_widget = None
+                self.barra_valores.destroy()
+
+            self.fig, self.ax = plt.subplots()
+            self.ax.hist(self.image_rescaled[self.image_rescaled].flatten(), 100)
+
+            self.canvas_widget = FigureCanvasTkAgg(self.fig, self.canvas)
+            self.canvas_widget.get_tk_widget().place( x=0, y=0,width=450, height=450)
+
+        if self.standarization.get()=='':
+            if self.fig is not None:
+                self.fig.clf()
+                self.fig = None
+                self.ax = None
+                self.canvas_widget.get_tk_widget().destroy()
+                self.canvas_widget = None
+
+            self.fig, self.ax = plt.subplots()
+            self.ax.hist(self.data.flatten(), 100)
+
+            self.canvas_widget = FigureCanvasTkAgg(self.fig, self.canvas)
+            self.canvas_widget.get_tk_widget().place( x=0, y=0,width=450, height=450)
+
+   
+    def imagebutton(self):
+        
+        file_name = os.path.basename(self.path_imagen)
+        name, ext = os.path.splitext(file_name) 
+
+        if self.standarization.get()=='Rescaling':
+            self.image_rescaled=standardization.rescaling(self.data, name)
+        if self.standarization.get()=='Z-score':
+            self.image_rescaled=standardization.z_score(self.data, name)
+        if self.standarization.get()=='White Stripe':
+            self.image_rescaled=standardization.white_stripe(self.data, name)
+        if self.standarization.get()=='Histogram matching':
+            self.image_rescaled=standardization.histogram_matching(self.path_imagen,self.data, name)
+
+        if self.standarization.get()=='':
+            messagebox.showwarning(message="A standardization method has not been selected yet", title="WARNINGN")
+
+        if self.denoising.get()=='Mean filter':
+            self.data= denoise.mean_filter(self.image_rescaled)
+        if self.denoising.get()=='Median filter':
+            self.data= denoise.median_filter(self.image_rescaled)
+        if self.denoising.get()=='Filter with borders':
+            self.data= denoise.filter_with_borders(self.image_rescaled)
+
+        self.visualize

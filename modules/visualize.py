@@ -83,19 +83,19 @@ class visualize():
         self.canvas_widgetx = FigureCanvasTkAgg(self.figx, self.canvasx)
         self.canvas_widgetx.draw()
         self.canvas_widgetx.get_tk_widget().place( x=0, y=0,width=400, height=400) 
-        cidx = self.figx.canvas.mpl_connect('button_press_event', self.onclickx)
+        cidx = self.figx.canvas.mpl_connect('motion_notify_event', self.onclickx)
 
         #    Convertir la figura en un widget de Tkinter y mostrarla en el canvas
         self.canvas_widgety = FigureCanvasTkAgg(self.figy, self.canvasy)
         self.canvas_widgety.draw()
         self.canvas_widgety.get_tk_widget().place( x=0, y=0,width=400, height=400) 
-        cidy = self.figy.canvas.mpl_connect('button_press_event', self.onclicky)
+        cidy = self.figy.canvas.mpl_connect('motion_notify_event', self.onclicky)
 
         #    Convertir la figura en un widget de Tkinter y mostrarla en el canvas
         self.canvas_widgetz = FigureCanvasTkAgg(self.figz, self.canvasz)
         self.canvas_widgetz.draw()
         self.canvas_widgetz.get_tk_widget().place( x=0, y=0,width=400, height=400) 
-        cidz = self.figz.canvas.mpl_connect('button_press_event', self.onclickz)
+        cidz = self.figz.canvas.mpl_connect('motion_notify_event', self.onclickz)
 
     def updateOptionmenu(self):
          # Obtener lista de archivos y subdirectorios en la carpeta
@@ -115,7 +115,7 @@ class visualize():
             self.option_menu.place(x=200, y= 80)
     
     def onclickx(self, event):
-        if self.axx.contains(event)[0]:
+        if event.xdata and event.ydata:
             self.z = int(event.xdata)
             self.y = int(event.ydata)
             for line in self.axx.lines:
@@ -129,7 +129,7 @@ class visualize():
             self.figx.canvas.draw()
         self.visualize(self.x,self.y,self.z,'x')
     def onclicky(self, event):
-        if self.axy.contains(event)[0]:
+        if event.xdata and event.ydata:
             self.z = int(event.xdata)
             self.x = int(event.ydata)
             for line in self.axy.lines:
@@ -143,7 +143,7 @@ class visualize():
             self.figy.canvas.draw()
         self.visualize(self.x,self.y,self.z,'y')
     def onclickz(self, event):
-        if self.axz.contains(event)[0]:
+        if event.xdata and event.ydata:
             self.x = int(event.xdata)
             self.y = int(event.ydata)
             for line in self.axz.lines:

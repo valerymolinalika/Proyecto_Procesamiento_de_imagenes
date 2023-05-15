@@ -4,6 +4,7 @@ from tkinter import *
 import tkinter as tk
 from modules.uploadImages import uploadImages
 from modules.visualize import visualize
+from modules.processing import processing 
 import os
 
 class interfaz():
@@ -28,19 +29,17 @@ class interfaz():
 
         # Pestaña 1: Interfaz de usuario
         self.tab1 = tk.Frame(self.notebook,bg='#2c343c')
-        self.notebook.add(self.tab1, text='Upload Images')
+        self.notebook.add(self.tab1, text='Preprocessing')
 
         self.tab2 = tk.Frame(self.notebook, bg='#2c343c')
-        self.notebook.add(self.tab2, text='Preprocessing')
+        self.notebook.add(self.tab2, text='Processing')
 
         self.tab3 = tk.Frame(self.notebook, bg='#2c343c')
-        self.notebook.add(self.tab3, text='Processing')
-
-        self.tab4 = tk.Frame(self.notebook, bg='#2c343c')
-        self.notebook.add(self.tab4, text='Visualize')
+        self.notebook.add(self.tab3, text='Visualize')
 
         uploadImages(self.ventana, self.tab1)
-        visualize(self.ventana, self.tab4)
+        processing(self.ventana, self.tab2)
+        visualize(self.ventana, self.tab3)
         self.ventana.mainloop()
             
 
