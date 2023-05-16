@@ -30,47 +30,32 @@ class segmentation():
         print(segmentationr.shape)
         return segmentationr
 
-    def growing(image,tol):
-        origin_x = 100
-        origin_y = 100
-        x = 1
-        y = 1
-        valor_medio_cluster = image[origin_x, origin_y, 20]
-        #tol = 50
+    def growing(image, tol=50,x=100, y=100, z=20):
+        # Region Growing
         segmentation = np.zeros_like(image)
-        point = [origin_x,origin_y]
-
-        tail = [point]
-        evaluated = image == True
-
-        while True:
-            punto = tail.pop(0)
-            
-            for dx in [-x, 0, x] :
-                for dy in [-y, 0, y] :
-                    nuevoPunto = [punto[0]+dx, punto[1]+dy]
-                    if((nuevoPunto[0] < 230) and ((nuevoPunto[0]) > 0) and (nuevoPunto[1] < 230) and ((nuevoPunto[1]) > 0) ):
-                        if (not evaluated[nuevoPunto[0], nuevoPunto[1],20]):
-                            if np.abs(valor_medio_cluster - image[nuevoPunto[0], nuevoPunto[1], 20]) < tol :
-                                segmentation[nuevoPunto[0], nuevoPunto[1], 20] = 1
-                                tail.append([nuevoPunto[0], nuevoPunto[1]])
-                                evaluated[nuevoPunto[0], nuevoPunto[1], 20] = True
-                                evaluated[punto[0], punto[1], 20] = True
-                            else :
-                                segmentation[nuevoPunto[0], nuevoPunto[1], 20] = 0
-                                tail.append([nuevoPunto[0], nuevoPunto[1]])
-                                evaluated[nuevoPunto[0], nuevoPunto[1], 20] = True
-                                evaluated[punto[0], punto[1], 20] = True
-            valor_medio_cluster = image[segmentation == 1].mean()
-
-            if len(tail) == 0:
-                break
+        if segmentation[x,y,z] == 1:
+            return
+        valor_medio_cluster = image[x,y,z]
+        segmentation[x,y,z] = 1
+        vecinos = [(x, y, z)]
+        while vecinos:
+            x, y, z = vecinos.pop()
+            for dx in [-1,0,1]:
+                for dy in [-1,0,1]:
+                    for dz in [-1,0,1]:
+                        #vecino
+                        nx, ny, nz = x + dx, y + dy, z + dz
+                        if nx >= 0 and nx < image.shape[0] and \
+                            ny >= 0 and ny < image.shape[1] and \
+                            nz >= 0 and nz < image.shape[2]:
+                            if np.abs(valor_medio_cluster - image[nx,ny,nz]) < tol and \
+                                segmentation[nx,ny,nz] == 0:
+                                segmentation[nx,ny,nz] = 1
+                                vecinos.append((nx, ny, nz))
         return segmentation
 
-    def k_means(image, ks):
+    def k_means(image, ks,iteracion):
         
-        iteracion=10
-
         # Inicialización de valores k
         k_values = np.linspace(np.amin(image), np.amax(image), ks)
         iteracion=10
@@ -83,7 +68,47 @@ class segmentation():
 
         return segmentationr
 
-            
+    def GMM(image_data):
+        w1 = 1/3
+        w2 = 1/3
+        w3 = 1/3
+        mu1 = 0
+        sd1 = 50
+        mu2 = 100
+        sd2 = 50
+        mu3 = 150
+        sd3 = 50
+
+        seg = np.zeros_like(image_data)
+        for iter in range(1, 5) :
+
+            # Compute likelihood of belonging to a cluster
+            p1 = 1/np.sqrt(2*np.pi*sd1**2) * np.exp(-0.5*np.power(image_data - mu1, 2) / sd1**2)
+            p2 = 1/np.sqrt(2*np.pi*sd2**2) * np.exp(-0.5*np.power(image_data - mu2, 2) / sd2**2)
+            p3 = 1/np.sqrt(2*np.pi*sd3**2) * np.exp(-0.5*np.power(image_data - mu3, 2) / sd3**2)
+
+            # Normalise probability
+            r1 = np.divide(w1 * p1, w1 * p1 + w2 * p2 + w3 * p3)
+            r2 = np.divide(w2 * p2, w1 * p1 + w2 * p2 + w3 * p3) 
+            r3 = np.divide(w3 * p3, w1 * p1 + w2 * p2 + w3 * p3) 
+
+            # Update parameters
+            w1 = r1.mean()
+            w2 = r2.mean()
+            w3 = r3.mean()
+            mu1 = np.multiply(r1, image_data).sum() / r1.sum()
+            sd1 = np.sqrt(np.multiply(r1, np.power(image_data - mu1, 2)).sum() / r1.sum())
+            mu2 = np.multiply(r2, image_data).sum() / r2.sum()
+            sd2 = np.sqrt(np.multiply(r2, np.power(image_data - mu2, 2)).sum() / r2.sum())
+            mu3 = np.multiply(r3, image_data).sum() / r3.sum()
+            sd3 = np.sqrt(np.multiply(r3, np.power(image_data - mu3, 2)).sum() / r3.sum())
+
+        # Perform segmentation
+        seg[np.multiply(r1 > r2, r1 > r3)] = 0
+        seg[np.multiply(r2 > r1, r2 > r3)] = 1
+        seg[np.multiply(r3 > r1, r3 > r2)] = 2
+        
+        return seg        
 
 
 

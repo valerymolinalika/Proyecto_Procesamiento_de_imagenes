@@ -72,7 +72,7 @@ class interfaz():
     def callfunction(self,method):
         if method=="1":
             self.data = self.img.get_fdata()
-            self.data=segmentation.tresholding(self.data, float(self.entry.get()), int(self.entry2.get()))
+            self.data=segmentation.tresholding(self.data, int(self.entry.get()), int(self.entry2.get()))
             self.visualize()
         elif method=="3":
             self.data = self.img.get_fdata()
