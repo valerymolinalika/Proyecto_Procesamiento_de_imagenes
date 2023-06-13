@@ -36,40 +36,32 @@ class standardization():
         image_data_rescaled=image_data/val_picos[1]
         return image_data_rescaled
     
-    def histogram_matching(path_imagen,image_data, typei):
+    def histogram_matching(transform_data,k,typei):
         #histogram
-        image = nib.load(path_imagen)
-        print (path_imagen)
+        
         print (typei)
         if typei =="IR" or typei =="IR.nii" :
-            data_target = nib.load('MRI/sample/IR.nii.gz').get_fdata()
+            reference_data = nib.load('MRI/sample/IR.nii.gz').get_fdata()
             print ("este 1")
         elif typei =="T1" or typei =="T1.nii":
-            data_target = nib.load('MRI/sample/T1.nii.gz').get_fdata()
+            reference_data = nib.load('MRI/sample/T1.nii.gz').get_fdata()
             print ("este 2")
         elif typei =="FLAIR" or typei =="FLAIR":
-            data_target = nib.load('MRI/sample/FLAIR.nii.gz').get_fdata()
+            reference_data = nib.load('MRI/sample/FLAIR.nii.gz').get_fdata()
             print ("este 3")
 
-        data_orig = image_data
-        
-        # Redimensionar los datos en un solo arreglo 1D
-        flat_orig = data_orig.flatten()
-        flat_target = data_target.flatten()
+        # Reshape the data arrays to 1D arrays
 
-        # Calcular los histogramas acumulativos
-        hist_orig, bins = np.histogram(flat_orig, bins=256, range=(0, 255), density=True)
-        hist_orig_cumulative = hist_orig.cumsum()
-        hist_target, _ = np.histogram(flat_target, bins=256, range=(0, 255), density=True)
-        hist_target_cumulative = hist_target.cumsum()
+        reference_flat = reference_data.flatten()
+        transform_flat = transform_data.flatten()
 
-        # Mapear los valores de la imagen de origen a los valores de la imagen objetivo
-        lut = np.interp(hist_orig_cumulative, hist_target_cumulative, bins[:-1])
 
-        # Aplicar el mapeo a los datos de la imagen de origen
-        data_matched = np.interp(data_orig, bins[:-1], lut)
+        reference_landmarks = np.percentile(reference_flat, np.linspace(0, 100, k))
+        transform_landmarks = np.percentile(transform_flat, np.linspace(0, 100, k))
 
-        # Crear una nueva imagen con los datos estandarizados
-        image_matched = nib.Nifti1Image(data_matched, image.affine, image.header)
-        
-        return data_matched
+        piecewise_func = np.interp(transform_flat, transform_landmarks, reference_landmarks)
+
+
+        transformed_data = piecewise_func.reshape(transform_data.shape)
+
+        return transformed_data

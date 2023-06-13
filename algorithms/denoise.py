@@ -1,7 +1,6 @@
 import nibabel as nib
 import numpy as np
 
-
 class denoise():
     def __init__(self,image_data):
          self.image_data = image_data
@@ -36,37 +35,38 @@ class denoise():
                     filtered_image_data[x+1, y+1, z+1] = median
         return filtered_image_data
 
-    def filter_with_borders(image_data):
+    def filter_with_borders(image):
+        threshold = 100
 
-        filtered_image_data = np.zeros_like(image_data)
+        filtered_image = np.zeros_like(image)
 
-        # Estimar la desviacion estandar de la intesidad
-        std = np.std(image_data)
+        for x in range(1, image.shape[0] - 2):
+            for y in range(1, image.shape[1] - 2):
+                for z in range(1, image.shape[2] - 2):
+                    # Compute the derivatives in x, y, and z directions
+                    dx = image[x + 1, y, z] - image[x - 1, y, z]
+                    dy = image[x, y + 1, z] - image[x, y - 1, z]
+                    dz = image[x, y, z + 1] - image[x, y, z - 1]
 
-        for x in range(1, image_data.shape[0]-2):
-            for y in range(1, image_data.shape[1]-2):
-                for z in range(1, image_data.shape[2]-2):
-                    # deriivadas en x - y - z 
-                    dx = image_data[x+1, y, z] - image_data[x-1, y, z]
-                    dy = image_data[x, y+1, z] - image_data[x, y-1, z]
-                    dz = image_data[x, y, z+1] - image_data[x, y, z-1]
+                    # Compute the magnitude of the gradient
+                    magnitude = np.sqrt(dx * dx + dy * dy + dz * dz)
 
-                    # magnitud del gradiente
-                    magnitude = np.sqrt(dx*dx + dy*dy + dz*dz)
+                    # Separate pixels based on the current threshold
+                    below_threshold = magnitude[magnitude < threshold]
+                    above_threshold = magnitude[magnitude >= threshold]
 
-                    # usando la desviacion estandar se calcula el threshold
-                    threshold = 3 * std
+                    # # Calculate the new threshold as the average of below_threshold and above_threshold
+                    threshold = (np.mean(below_threshold) + np.mean(above_threshold)) / 2   
 
-                    # si la magnitud es menor que es threshold se aplica el filtro medio
+                    # If the magnitude is below the threshold, apply median filter
                     if magnitude < threshold:
                         neighbours = []
                         for dx in range(-1, 2):
                             for dy in range(-1, 2):
                                 for dz in range(-1, 2):
-                                    neighbours.append(image_data[x+dx, y+dy, z+dz])
+                                    neighbours.append(image[x + dx, y + dy, z + dz])
                         median = np.median(neighbours)
-                        filtered_image_data[x, y, z] = median
+                        filtered_image[x, y, z] = median
                     else:
-                        filtered_image_data[x, y, z] = image_data[x, y, z]
-                        
-        return filtered_image_data
+                        filtered_image[x, y, z] = image[x, y, z]
+        return filtered_image

@@ -6,6 +6,7 @@ import customtkinter as ctk
 from tkinter import filedialog
 import nibabel as nib
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 
@@ -61,21 +62,21 @@ class visualize():
         # Crear una figura y un objeto de plot para el eje x
         self.figx, self.axx = plt.subplots()
         # Mostrar la imagen en el plot
-        self.axx.imshow(self.data[5,:,:])
+        self.axx.imshow(self.data[5,:,:], cmap='gray')
         self.axx.set_aspect('auto', adjustable='box')
         self.x=5
 
         # Crear una figura y un objeto de plot el eje y
         self.figy, self.axy = plt.subplots()
         # Mostrar la imagen en el plot
-        self.axy.imshow(self.data[:,5,:])
+        self.axy.imshow(self.data[:,5,:], cmap='gray')
         self.axy.set_aspect('auto', adjustable='box')
         self.y=5
 
         # Crear una figura y un objeto de plot el eje z
         self.figz, self.axz = plt.subplots()
         # Mostrar la imagen en el plot
-        self.axz.imshow(self.data[:,:,5])
+        self.axz.imshow(self.data[:,:,5], cmap="gray")
         self.axz.set_aspect('auto', adjustable='box')
         self.z=5
 
@@ -166,8 +167,9 @@ class visualize():
                 self.canvasy.delete("all")
                 self.canvasz.delete("all")
 
-                self.axy.imshow(self.data[:,self.y,:])
-                self.axz.imshow(self.data[:,:,self.z])
+                self.axy.imshow(self.data[:,self.y,:], cmap="gray")
+                #self.axz.imshow(np.rot90(np.rot90(np.rot90(self.data[:, :, self.z]))), cmap="gray")
+                self.axz.imshow(self.data[:, :, self.z], cmap="gray")
                 self.axy.set_aspect('auto', adjustable='box')
                 self.axz.set_aspect('auto', adjustable='box')
                 self.canvas_widgety.draw()
@@ -177,8 +179,8 @@ class visualize():
                 self.canvasx.delete("all")
                 self.canvasz.delete("all")
 
-                self.axx.imshow(self.data[self.x,:,:])
-                self.axz.imshow(self.data[:,:,self.z])
+                self.axx.imshow(self.data[self.x,:,:], cmap="gray")
+                self.axz.imshow(self.data[:,:,self.z], cmap="gray")
                 self.axx.set_aspect('auto', adjustable='box')
                 self.axz.set_aspect('auto', adjustable='box')
                 self.canvas_widgetx.draw()
@@ -188,8 +190,8 @@ class visualize():
                 self.canvasy.delete("all")
                 self.canvasx.delete("all")
 
-                self.axy.imshow(self.data[:,self.y,:])
-                self.axx.imshow(self.data[self.x,:,:])
+                self.axy.imshow(self.data[:,self.y,:], cmap="gray")
+                self.axx.imshow(self.data[self.x,:,:], cmap="gray")
                 self.axy.set_aspect('auto', adjustable='box')
                 self.axx.set_aspect('auto', adjustable='box')
                 self.canvas_widgety.draw()

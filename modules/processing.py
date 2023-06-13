@@ -1,3 +1,4 @@
+import glob
 from tkinter.font import Font
 from tkinter import ttk,messagebox
 from tkinter import *
@@ -7,9 +8,13 @@ from tkinter import filedialog
 import nibabel as nib
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
 from algorithms.segmentation import segmentation
+from algorithms.standardization import standardization
 from algorithms.denoise import denoise
 from algorithms.borders import borders
+from algorithms.register import register
+import SimpleITK as sitk 
 import shutil
 import os
 
@@ -65,8 +70,11 @@ class processing():
                                      fg_color="#2c343c",border_color="#661ae6")
         self.segmentation_method.place(x=320, y= 230) 
 
-        self.image=ctk.CTkButton(self.tab1, height=40, font=("Lucida Grande", 15),text="Borders detection ",text_color='#a7a1a5',fg_color='#661ae6',command= self.bordersbutton)
-        self.image.place(x=210, y=400)
+        self.borders=ctk.CTkButton(self.tab1, height=40, font=("Lucida Grande", 15),text="Borders detection ",text_color='#a7a1a5',fg_color='#661ae6',command= self.bordersbutton)
+        self.borders.place(x=130, y=400)
+        
+        self.register=ctk.CTkButton(self.tab1, height=40, font=("Lucida Grande", 15),text="Register ",text_color='#a7a1a5',fg_color='#661ae6',command= self.registerbutton)
+        self.register.place(x=280, y=400)
 
         
 
@@ -192,8 +200,14 @@ class processing():
             if self.entry4 is not None:
                 self.entry4.destroy()
             
-            self.entry = tk.Label(self.tab1, text ="No input data required",  font=self.fontStyle3, bg="#2c343c",fg="#a7a1a5" )
-            self.entry.place(x=150, y=320, width=250,height=25)
+            self.entry = ctk.CTkEntry(self.tab1, placeholder_text="K's", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6")
+            self.entry.place(x=90, y=320)
+
+            self.entry2 = ctk.CTkEntry(self.tab1, placeholder_text="Iterations", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6")
+            self.entry2.place(x=195, y=320)
+
+            self.entry3 = ctk.CTkEntry(self.tab1, placeholder_text="Threshold", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6")
+            self.entry3.place(x=305, y=320)
     
             self.btn = tk.Button(self.tab1, image=self.img_boton2, bg="#2c343c", borderwidth=0, command= lambda: self.callfunction("4"))
             self.btn.place(x=500, y= 310, width=80,height=50)
@@ -251,16 +265,32 @@ class processing():
             messagebox.showwarning(message="An image has not been uploaded", title="WARNINGN")
 
     def callfunction(self,method):
+
+        file_name = os.path.basename(self.path_imagen)
+        name, ext = os.path.splitext(file_name) 
+
         if method=="1":
             self.data = self.img.get_fdata()
-            self.data=segmentation.tresholding(self.data, float(self.entry.get()), int(self.entry2.get()))
+            
+            self.data=denoise.median_filter(self.data)
+            self.data=segmentation.thresholding(self.data, int(self.entry.get()), int(self.entry2.get()))
+            
+            nifti_img = nib.Nifti1Image((self.data).astype(np.float32), affine=np.eye(4))
+            output_image_path = "MRI/patient/segmentation"+name+".nii.gz"
+            nib.save(nifti_img, output_image_path)
+            
             self.visualize()
         
         elif method=="2":
             self.data = self.img.get_fdata()
+            
             self.data=denoise.median_filter(self.data)
             self.data=segmentation.growing(self.data, int(self.entry.get()), int(self.entry2.get()),int(self.entry3.get()),int(self.entry4.get()))
             
+            nifti_img = nib.Nifti1Image((self.data).astype(np.float32), affine=np.eye(4))
+            output_image_path = "MRI/patient/segmentation"+name+".nii.gz"
+            nib.save(nifti_img, output_image_path)
+
             if self.clicked_point is not None:
                 self.clicked_point.remove()
 
@@ -268,19 +298,66 @@ class processing():
            
         elif method=="3":
             self.data = self.img.get_fdata()
-            self.data=denoise.median_filter(self.data)
+            
+            #self.data=standardization.z_score(self.data, name)
+            #self.data=denoise.filter_with_borders(self.data)
             self.data=segmentation.k_means(self.data, int(self.entry.get()), int(self.entry2.get()))
+            
+            nifti_img = nib.Nifti1Image((self.data).astype(np.float32), affine=np.eye(4))
+            output_image_path = "MRI/patient/segmentation"+name+".nii.gz"
+            nib.save(nifti_img, output_image_path)
+
             self.visualize()
 
         elif method=="4":
             self.data = self.img.get_fdata()
             self.data=denoise.median_filter(self.data)
-            self.data=segmentation.GMM(self.data)
+            self.data=segmentation.gmm(self.data, int(self.entry.get()), int(self.entry2.get()),int(self.entry3.get()))
+            
+            nifti_img = nib.Nifti1Image((self.data).astype(np.float32), affine=np.eye(4))
+            output_image_path = "MRI/patient/segmentation"+name+".nii.gz"
+            nib.save(nifti_img, output_image_path)
+
             self.visualize()
     
     def bordersbutton(self):
         self.data=borders.border_magnitude(self.data) 
 
+    def registerbutton(self):
+        folder_path = "MRI/patient"  
+        file_paths = glob.glob(os.path.join(folder_path, "*"))  # Obtener todos los archivos en la carpeta
+        print(file_paths)
+        cont=0
+         
+        if any(file.endswith("FLAIR.nii") or file.endswith("FLAIR.nii.gz") for file in file_paths):
+            fixed= "MRI/patient/FLAIR.nii.gz"  
+            print (fixed)
+            
+            for file_path in file_paths:
+                file_name = os.path.basename(file_path)
+                name, ext = os.path.splitext(file_name)
+                
+                print (name)
+                print (ext)
+
+                if ext == ".gz" or ext == ".nii" :
+                    if name=="segmentationT1.nii" or name=="segmentationIR.nii" or name=="segmentationT1" or name=="segmentationIR":
+                        
+                        if name=="segmentationT1.nii":
+                            moving="MRI/patient/T1.nii.gz"
+                        
+                        if name=="segmentationIR.nii":
+                            moving="MRI/patient/IR.nii.gz"
+                       
+                        cont=cont+1
+                        moving2=file_path
+                        print (moving)
+                        register.rigid_register(fixed, moving, name, moving2)
+            if cont==0:
+                messagebox.showwarning(message="No IR or T1 image found for registration", title="WARNINGN")
+        else:
+            messagebox.showwarning(message="No FLAIR image found for registration", title="WARNINGN")            
+           
     def onclick(self,event):
         if self.clicked_point is not None:
             self.clicked_point.remove()

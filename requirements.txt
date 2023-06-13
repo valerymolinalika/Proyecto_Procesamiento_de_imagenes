@@ -1,0 +1,7 @@
+numpy
+tkinter
+customtkinter
+matplotlib
+spicy 
+nibabel
+SimpleITK

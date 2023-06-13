@@ -68,47 +68,54 @@ class segmentation():
 
         return segmentationr
 
-    def GMM(image_data):
-        w1 = 1/3
-        w2 = 1/3
-        w3 = 1/3
-        mu1 = 0
-        sd1 = 50
-        mu2 = 100
-        sd2 = 50
-        mu3 = 150
-        sd3 = 50
+    def gaussian(x, mu, sigma):
+        """
+        Calcula la función de densidad de probabilidad de una distribución gaussiana.
+        Parametros 
+            x: datos de entrada 
+            mu: Media de la distribución Gaussiana.
+            sigma: Desviación estándar de la distribución Gaussiana.
+        """
+        return np.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * np.sqrt(2 * np.pi))
 
-        seg = np.zeros_like(image_data)
-        for iter in range(1, 5) :
+    def gmm(image_data, k, num_iterations=100, threshold=0.01):
+        """
+        Segmenta una imagen en múltiples clases utilizando un Modelo de Mezcla Gaussiana.
 
-            # Compute likelihood of belonging to a cluster
-            p1 = 1/np.sqrt(2*np.pi*sd1**2) * np.exp(-0.5*np.power(image_data - mu1, 2) / sd1**2)
-            p2 = 1/np.sqrt(2*np.pi*sd2**2) * np.exp(-0.5*np.power(image_data - mu2, 2) / sd2**2)
-            p3 = 1/np.sqrt(2*np.pi*sd3**2) * np.exp(-0.5*np.power(image_data - mu3, 2) / sd3**2)
+        param image_data: Datos de la imagen de entrada.
+        param k: Número de clases en las que se desea segmentar la imagen.
+        param num_iterations: Número máximo de iteraciones para ejecutar el algoritmo (por defecto: 100).
+        param threshold: Umbral de convergencia para el algoritmo (por defecto: 0.01).
+        return: Datos de la imagen segmentada.
+        """
+        # Se inicializan los parametros 
+        num_voxels = np.prod(image_data.shape)
+        mu = np.linspace(image_data.min(), image_data.max(), k)
+        sigma = np.ones(k) * (image_data.max() - image_data.min()) / (2 * k)
+        p = np.ones(k) / k
+        q = np.zeros((num_voxels, k))
 
-            # Normalise probability
-            r1 = np.divide(w1 * p1, w1 * p1 + w2 * p2 + w3 * p3)
-            r2 = np.divide(w2 * p2, w1 * p1 + w2 * p2 + w3 * p3) 
-            r3 = np.divide(w3 * p3, w1 * p1 + w2 * p2 + w3 * p3) 
+        for i in range(num_iterations):
+            # calcula las responsabilidades de cada clase
+            for k in range(k):
+                q[:, k] = p[k] * gaussian(image_data.flatten(), mu[k], sigma[k])
+            q = q / np.sum(q, axis=1)[:, np.newaxis]
 
-            # Update parameters
-            w1 = r1.mean()
-            w2 = r2.mean()
-            w3 = r3.mean()
-            mu1 = np.multiply(r1, image_data).sum() / r1.sum()
-            sd1 = np.sqrt(np.multiply(r1, np.power(image_data - mu1, 2)).sum() / r1.sum())
-            mu2 = np.multiply(r2, image_data).sum() / r2.sum()
-            sd2 = np.sqrt(np.multiply(r2, np.power(image_data - mu2, 2)).sum() / r2.sum())
-            mu3 = np.multiply(r3, image_data).sum() / r3.sum()
-            sd3 = np.sqrt(np.multiply(r3, np.power(image_data - mu3, 2)).sum() / r3.sum())
+            # Actualiza los parametros
+            n = np.sum(q, axis=0)
+            p = n / num_voxels
+            mu = np.sum(q * image_data.flatten()[:, np.newaxis], axis=0) / n
+            sigma = np.sqrt(np.sum(q * (image_data.flatten()[:, np.newaxis] - mu) ** 2, axis=0) / n)
 
-        # Perform segmentation
-        seg[np.multiply(r1 > r2, r1 > r3)] = 0
-        seg[np.multiply(r2 > r1, r2 > r3)] = 1
-        seg[np.multiply(r3 > r1, r3 > r2)] = 2
-        
-        return seg        
+            # verifica convergencia
+            if np.max(np.abs(p - q.sum(axis=0) / num_voxels)) < threshold:
+                break
+
+        # Segmentacion
+        segmentation = np.argmax(q, axis=1)
+        segmentation = segmentation.reshape(image_data.shape)
+
+        return segmentation       
 
 
 

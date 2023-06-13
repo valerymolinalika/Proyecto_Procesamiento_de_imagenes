@@ -8,6 +8,7 @@ import nibabel as nib
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from algorithms.standardization import standardization
+import SimpleITK as sitk
 from algorithms.denoise import denoise
 import shutil
 import os
@@ -262,7 +263,7 @@ class uploadImages():
             self.canvas_widget.get_tk_widget().place( x=0, y=0,width=450, height=450)
 
         if self.standarization.get()=='Histogram matching':
-            self.image_rescaled=standardization.histogram_matching(self.path_imagen,self.data, name)
+            self.image_rescaled=standardization.histogram_matching(self.data, 40,name)
 
             if self.fig is not None:
                 self.fig.clf()
@@ -273,7 +274,7 @@ class uploadImages():
                 self.barra_valores.destroy()
 
             self.fig, self.ax = plt.subplots()
-            self.ax.hist(self.image_rescaled[self.image_rescaled].flatten(), 100)
+            self.ax.hist(self.image_rescaled.flatten(), 100)
 
             self.canvas_widget = FigureCanvasTkAgg(self.fig, self.canvas)
             self.canvas_widget.get_tk_widget().place( x=0, y=0,width=450, height=450)
