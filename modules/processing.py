@@ -18,6 +18,8 @@ import SimpleITK as sitk
 import shutil
 import os
 
+import SimpleITK as sitk
+
 
 class processing():
     def __init__(self, window, tab):
@@ -275,21 +277,26 @@ class processing():
             self.data=denoise.median_filter(self.data)
             self.data=segmentation.thresholding(self.data, int(self.entry.get()), int(self.entry2.get()))
             
-            nifti_img = nib.Nifti1Image((self.data).astype(np.float32), affine=np.eye(4))
-            output_image_path = "MRI/patient/segmentation"+name+".nii.gz"
-            nib.save(nifti_img, output_image_path)
+            imageUploaded = nib.load(self.path_imagen)
+            affine = imageUploaded.affine
+            reconstructed_image = nib.Nifti1Image((self.data).astype(np.float32), affine)
+            output_path = os.path.join("MRI/patient", "segmentation"+name+".gz")
+            nib.save(reconstructed_image, output_path)
             
             self.visualize()
         
         elif method=="2":
             self.data = self.img.get_fdata()
             
-            self.data=denoise.median_filter(self.data)
+            self.data=standardization.z_score(self.data, name)
+            self.data=denoise.filter_with_borders(self.data)
             self.data=segmentation.growing(self.data, int(self.entry.get()), int(self.entry2.get()),int(self.entry3.get()),int(self.entry4.get()))
             
-            nifti_img = nib.Nifti1Image((self.data).astype(np.float32), affine=np.eye(4))
-            output_image_path = "MRI/patient/segmentation"+name+".nii.gz"
-            nib.save(nifti_img, output_image_path)
+            imageUploaded = nib.load(self.path_imagen)
+            affine = imageUploaded.affine
+            reconstructed_image = nib.Nifti1Image((self.data).astype(np.float32), affine)
+            output_path = os.path.join("MRI/patient", "segmentation"+name+".gz")
+            nib.save(reconstructed_image, output_path)
 
             if self.clicked_point is not None:
                 self.clicked_point.remove()
@@ -299,24 +306,29 @@ class processing():
         elif method=="3":
             self.data = self.img.get_fdata()
             
-            #self.data=standardization.z_score(self.data, name)
-            #self.data=denoise.filter_with_borders(self.data)
+            self.data=standardization.z_score(self.data, name)
+            self.data=denoise.filter_with_borders(self.data)
             self.data=segmentation.k_means(self.data, int(self.entry.get()), int(self.entry2.get()))
             
-            nifti_img = nib.Nifti1Image((self.data).astype(np.float32), affine=np.eye(4))
-            output_image_path = "MRI/patient/segmentation"+name+".nii.gz"
-            nib.save(nifti_img, output_image_path)
+            imageUploaded = nib.load(self.path_imagen)
+            affine = imageUploaded.affine
+            reconstructed_image = nib.Nifti1Image((self.data).astype(np.float32), affine)
+            output_path = os.path.join("MRI/patient", "segmentation"+name+".gz")
+            nib.save(reconstructed_image, output_path)
 
             self.visualize()
 
         elif method=="4":
             self.data = self.img.get_fdata()
-            self.data=denoise.median_filter(self.data)
+            self.data=standardization.z_score(self.data, name)
+            self.data=denoise.filter_with_borders(self.data)
             self.data=segmentation.gmm(self.data, int(self.entry.get()), int(self.entry2.get()),int(self.entry3.get()))
-            
-            nifti_img = nib.Nifti1Image((self.data).astype(np.float32), affine=np.eye(4))
-            output_image_path = "MRI/patient/segmentation"+name+".nii.gz"
-            nib.save(nifti_img, output_image_path)
+
+            imageUploaded = nib.load(self.path_imagen)
+            affine = imageUploaded.affine
+            reconstructed_image = nib.Nifti1Image((self.data).astype(np.float32), affine)
+            output_path = os.path.join("MRI/patient", "segmentation"+name+".gz")
+            nib.save(reconstructed_image, output_path)
 
             self.visualize()
     
@@ -326,33 +338,38 @@ class processing():
     def registerbutton(self):
         folder_path = "MRI/patient"  
         file_paths = glob.glob(os.path.join(folder_path, "*"))  # Obtener todos los archivos en la carpeta
-        print(file_paths)
+        #print(file_paths)
         cont=0
          
         if any(file.endswith("FLAIR.nii") or file.endswith("FLAIR.nii.gz") for file in file_paths):
             fixed= "MRI/patient/FLAIR.nii.gz"  
-            print (fixed)
+            #print (fixed +"2")
             
             for file_path in file_paths:
                 file_name = os.path.basename(file_path)
                 name, ext = os.path.splitext(file_name)
                 
-                print (name)
-                print (ext)
+               #print (name+"3")
+               #print (ext+"4")
 
                 if ext == ".gz" or ext == ".nii" :
-                    if name=="segmentationT1.nii" or name=="segmentationIR.nii" or name=="segmentationT1" or name=="segmentationIR":
-                        
-                        if name=="segmentationT1.nii":
+                    #print (name+"5")
+                    if name=="segmentationIR.nii" or name=="segmentationT1.nii":
+                
+                        if name=="segmentationT1.nii" or name=="segmentationT1":
+                            seg_path = "MRI/patient/segmentationT1.nii.gz"
                             moving="MRI/patient/T1.nii.gz"
-                        
-                        if name=="segmentationIR.nii":
+
+                        if name=="segmentationIR.nii" or name=="segmentationIR":
+                            seg_path = "MRI/patient/segmentationIR.nii.gz"
                             moving="MRI/patient/IR.nii.gz"
                        
                         cont=cont+1
-                        moving2=file_path
-                        print (moving)
-                        register.rigid_register(fixed, moving, name, moving2)
+                        #print (moving)
+                        register.rigid_register(fixed, moving, name, seg_path)
+                        #register.ants_register(fixed, moving, name)
+                    # else:
+                    #     messagebox.showwarning(message="No segmented images found", title="WARNINGN")
             if cont==0:
                 messagebox.showwarning(message="No IR or T1 image found for registration", title="WARNINGN")
         else:

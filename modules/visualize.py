@@ -7,6 +7,7 @@ from tkinter import filedialog
 import nibabel as nib
 import matplotlib.pyplot as plt
 import numpy as np
+from algorithms.volumes import Calculate_volumes
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 
@@ -46,6 +47,31 @@ class visualize():
         self.option_menu.place(x=200, y= 80)
         self.btn = tk.Button(self.tab1, image=self.img_boton, bg="#2c343c", borderwidth=0, command=self.updateOptionmenu)
         self.btn.place(x=440, y= 78, width=40,height=40)
+
+        self.calculate=ctk.CTkButton(self.tab1, height=40, font=("Lucida Grande", 15),text="Calculate",text_color='#a7a1a5',fg_color='#661ae6', command= lambda: self.calculate_volumes())
+        self.calculate.place(x=100, y=550)
+
+        
+        # Etiquetas
+        label1 = tk.Label(self.tab1, text="Cerebrospinal fluid:", font=self.fontStyle3, bg="#2c343c", fg="#a7a1a5")
+        label1.place(x=800, y=580, width=180, height=25)
+        label2 = tk.Label(self.tab1, text="Grey matter:", font=self.fontStyle3, bg="#2c343c", fg="#a7a1a5")
+        label2.place(x=800, y=535, width=110, height=25)
+        label3 = tk.Label(self.tab1, text="Normal-appearing white matter:", font=self.fontStyle3, bg="#2c343c", fg="#a7a1a5")
+        label3.place(x=300, y=580, width=280, height=25)
+        label4 = tk.Label(self.tab1, text="White matter hyperintensities:", font=self.fontStyle3, bg="#2c343c", fg="#a7a1a5")
+        label4.place(x=300, y=535, width=260, height=25)
+
+
+        # Campos de entrada
+        self.entry1 = ctk.CTkEntry(self.tab1, placeholder_text="m3", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6", state="disabled")
+        self.entry1.place(x=600, y=535)
+        self.entry2 = ctk.CTkEntry(self.tab1, placeholder_text="m3", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6", state="disabled")
+        self.entry2.place(x=600, y=580)
+        self.entry3 = ctk.CTkEntry(self.tab1, placeholder_text="m3", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6", state="disabled")
+        self.entry3.place(x=940, y=535)
+        self.entry4 = ctk.CTkEntry(self.tab1, placeholder_text="m3", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6", state="disabled")
+        self.entry4.place(x=940, y=580)
     
     def display_selected(self, *args):
         self.path_imagen="MRI/patient/"+self.option_menu.get()
@@ -97,6 +123,11 @@ class visualize():
         self.canvas_widgetz.draw()
         self.canvas_widgetz.get_tk_widget().place( x=0, y=0,width=400, height=400) 
         cidz = self.figz.canvas.mpl_connect('motion_notify_event', self.onclickz)
+
+
+    def calculate_volumes(self):
+        self.data=Calculate_volumes.remove_brain()
+        volumes=Calculate_volumes.volumes()
 
     def updateOptionmenu(self):
          # Obtener lista de archivos y subdirectorios en la carpeta

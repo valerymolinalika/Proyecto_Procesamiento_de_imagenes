@@ -58,7 +58,6 @@ class segmentation():
         
         # Inicialización de valores k
         k_values = np.linspace(np.amin(image), np.amax(image), ks)
-        iteracion=10
         for i in range(iteracion):
             d_values = [np.abs(k - image) for k in k_values]
             segmentationr = np.argmin(d_values, axis=0)

@@ -176,7 +176,7 @@ class uploadImages():
         # Crear una figura y un objeto de plot       
         self.fig, self.ax= plt.subplots()
         # Mostrar la imagen en el plot
-        self.ax.imshow(self.data[:,:,5])
+        self.ax.imshow(self.data[:,:,5], cmap='gray')
         #    Convertir la figura en un widget de Tkinter y mostrarla en el canvas
         self.canvas_widget = FigureCanvasTkAgg(self.fig, self.canvas)
         self.canvas_widget.draw()
