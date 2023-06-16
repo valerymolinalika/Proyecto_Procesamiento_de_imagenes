@@ -51,27 +51,6 @@ class visualize():
         self.calculate=ctk.CTkButton(self.tab1, height=40, font=("Lucida Grande", 15),text="Calculate",text_color='#a7a1a5',fg_color='#661ae6', command= lambda: self.calculate_volumes())
         self.calculate.place(x=100, y=550)
 
-        
-        # Etiquetas
-        label1 = tk.Label(self.tab1, text="Cerebrospinal fluid:", font=self.fontStyle3, bg="#2c343c", fg="#a7a1a5")
-        label1.place(x=800, y=580, width=180, height=25)
-        label2 = tk.Label(self.tab1, text="Grey matter:", font=self.fontStyle3, bg="#2c343c", fg="#a7a1a5")
-        label2.place(x=800, y=535, width=110, height=25)
-        label3 = tk.Label(self.tab1, text="Normal-appearing white matter:", font=self.fontStyle3, bg="#2c343c", fg="#a7a1a5")
-        label3.place(x=300, y=580, width=280, height=25)
-        label4 = tk.Label(self.tab1, text="White matter hyperintensities:", font=self.fontStyle3, bg="#2c343c", fg="#a7a1a5")
-        label4.place(x=300, y=535, width=260, height=25)
-
-
-        # Campos de entrada
-        self.entry1 = ctk.CTkEntry(self.tab1, placeholder_text="m3", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6", state="disabled")
-        self.entry1.place(x=600, y=535)
-        self.entry2 = ctk.CTkEntry(self.tab1, placeholder_text="m3", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6", state="disabled")
-        self.entry2.place(x=600, y=580)
-        self.entry3 = ctk.CTkEntry(self.tab1, placeholder_text="m3", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6", state="disabled")
-        self.entry3.place(x=940, y=535)
-        self.entry4 = ctk.CTkEntry(self.tab1, placeholder_text="m3", width=80, height=32 ,font =("Lucida Grande",15),border_color="#661ae6", state="disabled")
-        self.entry4.place(x=940, y=580)
     
     def display_selected(self, *args):
         self.path_imagen="MRI/patient/"+self.option_menu.get()
@@ -88,21 +67,21 @@ class visualize():
         # Crear una figura y un objeto de plot para el eje x
         self.figx, self.axx = plt.subplots()
         # Mostrar la imagen en el plot
-        self.axx.imshow(self.data[5,:,:], cmap='gray')
+        self.axx.imshow(self.data[5,:,:])
         self.axx.set_aspect('auto', adjustable='box')
         self.x=5
 
         # Crear una figura y un objeto de plot el eje y
         self.figy, self.axy = plt.subplots()
         # Mostrar la imagen en el plot
-        self.axy.imshow(self.data[:,5,:], cmap='gray')
+        self.axy.imshow(self.data[:,5,:])
         self.axy.set_aspect('auto', adjustable='box')
         self.y=5
 
         # Crear una figura y un objeto de plot el eje z
         self.figz, self.axz = plt.subplots()
         # Mostrar la imagen en el plot
-        self.axz.imshow(self.data[:,:,5], cmap="gray")
+        self.axz.imshow(self.data[:,:,5])
         self.axz.set_aspect('auto', adjustable='box')
         self.z=5
 
@@ -128,6 +107,17 @@ class visualize():
     def calculate_volumes(self):
         self.data=Calculate_volumes.remove_brain()
         volumes=Calculate_volumes.volumes()
+        print (volumes)
+
+        listbox = tk.Listbox(self.tab1,bg="#2c343c" )
+        listbox.place(x=300, y= 530, width=100,height=85)
+        
+        for i, volume in enumerate(volumes):
+            # Crea la etiqueta con el formato "label i: valor"
+            etiqueta = f"label {i + 1}: {volume}"
+            
+            # Agrega la etiqueta a la listbox
+            listbox.insert(tk.END, etiqueta)
 
     def updateOptionmenu(self):
          # Obtener lista de archivos y subdirectorios en la carpeta
@@ -198,9 +188,9 @@ class visualize():
                 self.canvasy.delete("all")
                 self.canvasz.delete("all")
 
-                self.axy.imshow(self.data[:,self.y,:], cmap="gray")
+                self.axy.imshow(self.data[:,self.y,:])
                 #self.axz.imshow(np.rot90(np.rot90(np.rot90(self.data[:, :, self.z]))), cmap="gray")
-                self.axz.imshow(self.data[:, :, self.z], cmap="gray")
+                self.axz.imshow(self.data[:, :, self.z])
                 self.axy.set_aspect('auto', adjustable='box')
                 self.axz.set_aspect('auto', adjustable='box')
                 self.canvas_widgety.draw()
@@ -210,8 +200,8 @@ class visualize():
                 self.canvasx.delete("all")
                 self.canvasz.delete("all")
 
-                self.axx.imshow(self.data[self.x,:,:], cmap="gray")
-                self.axz.imshow(self.data[:,:,self.z], cmap="gray")
+                self.axx.imshow(self.data[self.x,:,:])
+                self.axz.imshow(self.data[:,:,self.z])
                 self.axx.set_aspect('auto', adjustable='box')
                 self.axz.set_aspect('auto', adjustable='box')
                 self.canvas_widgetx.draw()
@@ -221,8 +211,8 @@ class visualize():
                 self.canvasy.delete("all")
                 self.canvasx.delete("all")
 
-                self.axy.imshow(self.data[:,self.y,:], cmap="gray")
-                self.axx.imshow(self.data[self.x,:,:], cmap="gray")
+                self.axy.imshow(self.data[:,self.y,:])
+                self.axx.imshow(self.data[self.x,:,:])
                 self.axy.set_aspect('auto', adjustable='box')
                 self.axx.set_aspect('auto', adjustable='box')
                 self.canvas_widgety.draw()
