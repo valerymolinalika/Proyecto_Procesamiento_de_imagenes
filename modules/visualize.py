@@ -105,7 +105,7 @@ class visualize():
 
 
     def calculate_volumes(self):
-        self.data=Calculate_volumes.remove_brain()
+        self.data=Calculate_volumes.remove_brain(2)
         volumes=Calculate_volumes.volumes()
         print (volumes)
 

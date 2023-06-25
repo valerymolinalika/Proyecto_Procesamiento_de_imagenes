@@ -9,7 +9,7 @@ import os
 
 class Calculate_volumes():
 
-    def remove_brain():
+    def remove_brain(lession_label):
         # Cargar la imagen NIfTI
 
         nifti_img = nib.load(
@@ -88,7 +88,7 @@ class Calculate_volumes():
         # ----------------------------------------------------------------------------------
         # Cargar las imágenes
 
-        imagen_original = sitk.ReadImage(os.path.join("MRI/patient", "FLAIR.nii.gz"))
+        imagen_original = sitk.ReadImage(os.path.join("MRI/patient", "segmentationFLAIR.nii.gz"))
         imagen_referencia = sitk.ReadImage(os.path.join("MRI/patient", "IR_skull.nii.gz"))
 
         # Realizar segmentación basada en umbral adaptativo
@@ -104,7 +104,7 @@ class Calculate_volumes():
 
         sitk.WriteImage(
             imagen_sin_craneo,
-            os.path.join("MRI/patient", "FLAIR_original_sin_craneo.nii.gz"),
+            os.path.join("MRI/patient", "FLAIR_segmentada_sin_craneo.nii.gz"),
         )
 
         # ----------------------------------------------------------------------------------
@@ -113,16 +113,36 @@ class Calculate_volumes():
 
         image = nib.load(os.path.join("MRI/patient", "FLAIR_skull.nii.gz"))
         image_data = image.get_fdata()
-        image_data_flair_without_skull = nib.load(
-            os.path.join("MRI/patient", "FLAIR_original_sin_craneo.nii.gz")
+        image_data_flair_segmented = nib.load(
+            os.path.join("MRI/patient", "FLAIR_segmentada_sin_craneo.nii.gz")
         ).get_fdata()
-
-        image_data_flair_segmented = segmentation.k_means(image_data_flair_without_skull, 15, 15)
 
         # Where the values are 3, replace them in the image_data with a value of 3
         image_data_flair_segmented[:,:,:13] = 0
-        image_data = np.where(image_data_flair_segmented == 7, 3, image_data)
+        image_data_flair_segmented[:,:,40:] = 0
+        image_data = np.where(image_data_flair_segmented == lession_label, 3, image_data)
 
+        # Cambiar los labels para que queden acorde a la segmentación de Jose Bernal
+        bg = image_data == 0
+        grey_matter = np.logical_and(image_data > 0.95, image_data <= 1.5)
+        white_matter = np.logical_and(image_data > 1.5, image_data <= 2.5)
+        lessons = np.logical_and(image_data > 2.5, image_data <= 3.5)
+        cfr_liquid = np.logical_or(
+            np.logical_and(image_data > 3.5, image_data <= 4.5),
+            np.logical_and(image_data > 0.05, image_data <= 0.95),
+        )
+
+        image_data[bg] = 0
+        image_data[cfr_liquid] = 1
+        image_data[grey_matter] = 2
+        image_data[white_matter] = 3
+        image_data[lessons] = 4
+
+        # Ajustar un poco las segmentaciones para mejorar el volumen (A los primeros planos eliminar segmentación y así reducir error de cráneo)
+        image_data[:, :, :3] = 0
+        image_data[:, :, 43:] = 0
+
+        # Guardar la imagen sin el cráneo y con las lesiones segmentadas
         affine = image.affine
         # Create a nibabel image object from the image data
         image = nib.Nifti1Image(image_data.astype(np.float32), affine=affine)
