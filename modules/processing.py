@@ -273,10 +273,11 @@ class processing():
 
         if method=="1":
             self.data = self.img.get_fdata()
-            
-            self.data=denoise.median_filter(self.data)
+
+            #self.data=standardization.z_score(self.data, name)
+            #self.data=denoise.median_filter(self.data)
             self.data=segmentation.thresholding(self.data, int(self.entry.get()), int(self.entry2.get()))
-            
+    
             imageUploaded = nib.load(self.path_imagen)
             affine = imageUploaded.affine
             reconstructed_image = nib.Nifti1Image((self.data).astype(np.float32), affine)
@@ -288,8 +289,8 @@ class processing():
         elif method=="2":
             self.data = self.img.get_fdata()
             
-            self.data=standardization.z_score(self.data, name)
-            self.data=denoise.filter_with_borders(self.data)
+            #self.data=standardization.z_score(self.data, name)
+            #self.data=denoise.filter_with_borders(self.data)
             self.data=segmentation.growing(self.data, int(self.entry.get()), int(self.entry2.get()),int(self.entry3.get()),int(self.entry4.get()))
             
             imageUploaded = nib.load(self.path_imagen)
@@ -306,8 +307,8 @@ class processing():
         elif method=="3":
             self.data = self.img.get_fdata()
             
-            self.data=standardization.z_score(self.data, name)
-            self.data=denoise.filter_with_borders(self.data)
+            #self.data=standardization.z_score(self.data, name)
+            #self.data=denoise.filter_with_borders(self.data)
             self.data=segmentation.k_means(self.data, int(self.entry.get()), int(self.entry2.get()))
             
             imageUploaded = nib.load(self.path_imagen)
@@ -320,8 +321,8 @@ class processing():
 
         elif method=="4":
             self.data = self.img.get_fdata()
-            self.data=standardization.z_score(self.data, name)
-            self.data=denoise.filter_with_borders(self.data)
+            #self.data=standardization.z_score(self.data, name)
+            #self.data=denoise.filter_with_borders(self.data)
             self.data=segmentation.gmm(self.data, int(self.entry.get()), int(self.entry2.get()),int(self.entry3.get()))
 
             imageUploaded = nib.load(self.path_imagen)

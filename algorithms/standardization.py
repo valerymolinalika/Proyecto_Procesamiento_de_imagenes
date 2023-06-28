@@ -46,7 +46,7 @@ class standardization():
         elif typei =="T1" or typei =="T1.nii":
             reference_data = nib.load('MRI/sample/T1.nii.gz').get_fdata()
             print ("este 2")
-        elif typei =="FLAIR" or typei =="FLAIR":
+        elif typei =="FLAIR" or typei =="FLAIR.nii":
             reference_data = nib.load('MRI/sample/FLAIR.nii.gz').get_fdata()
             print ("este 3")
 

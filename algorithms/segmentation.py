@@ -8,7 +8,7 @@ class segmentation():
         self.image_data = image_data
         self.tau = tau
     
-    def tresholding(image_data,tau,tol):
+    def thresholding(image_data,tau,tol):
 
         print ("se pudo")
         #plt.imshow(self.image_data[:, :, 100])
@@ -67,7 +67,7 @@ class segmentation():
 
         return segmentationr
 
-    def gaussian(x, mu, sigma):
+    def gaussian(self,x, mu, sigma):
         """
         Calcula la función de densidad de probabilidad de una distribución gaussiana.
         Parametros 
@@ -95,9 +95,11 @@ class segmentation():
         q = np.zeros((num_voxels, k))
 
         for i in range(num_iterations):
-            # calcula las responsabilidades de cada clase
+            # calcula las responsabilidades de cada clase haciendo uso de 
+            # la función de densidad de probabilidad de una distribución gaussiana.
+         
             for k in range(k):
-                q[:, k] = p[k] * gaussian(image_data.flatten(), mu[k], sigma[k])
+                q[:, k] = p[k] * np.exp(-0.5 * ((image_data.flatten() - mu[k]) / sigma[k]) ** 2) / (sigma[k] * np.sqrt(2 * np.pi))
             q = q / np.sum(q, axis=1)[:, np.newaxis]
 
             # Actualiza los parametros
@@ -105,7 +107,7 @@ class segmentation():
             p = n / num_voxels
             mu = np.sum(q * image_data.flatten()[:, np.newaxis], axis=0) / n
             sigma = np.sqrt(np.sum(q * (image_data.flatten()[:, np.newaxis] - mu) ** 2, axis=0) / n)
-
+           
             # verifica convergencia
             if np.max(np.abs(p - q.sum(axis=0) / num_voxels)) < threshold:
                 break

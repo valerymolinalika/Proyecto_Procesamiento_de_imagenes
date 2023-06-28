@@ -192,13 +192,13 @@ class uploadImages():
             value=int(self.barra_valores.get())
             print(value)
             if self.axis.get()=='Axis x':
-                self.ax.imshow(self.data[value,:,:])
+                self.ax.imshow(self.data[value,:,:], cmap='gray')
             elif self.axis.get()=='Axis y':
-                self.ax.imshow(self.data[:,value,:])
+                self.ax.imshow(self.data[:,value,:], cmap='gray')
             elif self.axis.get()=='Axis z':
-                self.ax.imshow(self.data[:,:,value])
+                self.ax.imshow(self.data[:,:,value], cmap='gray')
             else:
-                self.ax.imshow(self.data[:,:,5])
+                self.ax.imshow(self.data[:,:,5], cmap='gray')
 
             # Convertir la figura en un widget de Tkinter y mostrarla en el canvas
             self.canvas_widget.draw()
@@ -263,7 +263,18 @@ class uploadImages():
             self.canvas_widget.get_tk_widget().place( x=0, y=0,width=450, height=450)
 
         if self.standarization.get()=='Histogram matching':
-            self.image_rescaled=standardization.histogram_matching(self.data, 40,name)
+            print (name)
+            if name=='T1.nii' or name=="T1":
+                path_reference="MRI/sample/T1.nii.gz"
+                image_reference=nib.load(path_reference).get_fdata()
+            if name=='IR.nii' or name=="IR":
+                path_reference="MRI/sample/IR.nii.gz"
+                image_reference=nib.load(path_reference).get_fdata()
+            if name=='FLAIR.nii' or name=="FLAIR":
+                path_reference="MRI/sample/FLAIR.nii.gz"
+                image_reference=nib.load(path_reference).get_fdata()
+            
+            self.image_rescaled=standardization.histogram_matching(self.data,30,name)
 
             if self.fig is not None:
                 self.fig.clf()
@@ -275,6 +286,7 @@ class uploadImages():
 
             self.fig, self.ax = plt.subplots()
             self.ax.hist(self.image_rescaled.flatten(), 100)
+            self.ax.hist(image_reference.flatten(), 100, alpha=0.5)
 
             self.canvas_widget = FigureCanvasTkAgg(self.fig, self.canvas)
             self.canvas_widget.get_tk_widget().place( x=0, y=0,width=450, height=450)
@@ -306,7 +318,8 @@ class uploadImages():
         if self.standarization.get()=='White Stripe':
             self.image_rescaled=standardization.white_stripe(self.data, name)
         if self.standarization.get()=='Histogram matching':
-            self.image_rescaled=standardization.histogram_matching(self.path_imagen,self.data, name)
+            print (name)
+            self.image_rescaled=standardization.histogram_matching(self.data,30,name)
 
         if self.standarization.get()=='':
             messagebox.showwarning(message="A standardization method has not been selected yet", title="WARNINGN")
@@ -318,4 +331,4 @@ class uploadImages():
         if self.denoising.get()=='Filter with borders':
             self.data= denoise.filter_with_borders(self.image_rescaled)
 
-        self.visualize
+        self.visualize()
